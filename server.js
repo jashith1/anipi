@@ -72,7 +72,18 @@ app.get('/anime', async (req, res) => {
 //get anime episodes
 app.get('/watch', async (req, res) => {
 	const resUrl = anibase + '/' + req.query.id + '-episode-' + req.query.episode;
-	res.send(resUrl);
+	const axiosData = await axios.get(resUrl);
+	const htmlData = axiosData.data;
+	const $ = cheerio.load(htmlData);
+
+	const urls = [];
+	$('div.anime_muti_link ul li').each((index, el) => {
+		urls.push({
+			provider: $(el).find('a').text().trim().split('Choose')[0],
+			url: $(el).find('a').attr('data-video'),
+		});
+	});
+	res.send(urls);
 });
 
 app.listen(port, () => {
